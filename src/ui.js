@@ -614,7 +614,7 @@ UIMode.Embedded = class extends UIMode {
 }
 
 /// The object responsible for controlling all aspects of the user interface.
-class UI {
+export class UI {
     constructor(element) {
         // The quiver identified with the UI.
         this.quiver = new Quiver();
