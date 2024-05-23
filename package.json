@@ -1,0 +1,23 @@
+{
+  "name": "quiver",
+  "version": "0.1.0",
+  "description": "A modern commutative diagram editor for the web",
+  "main": "''",
+  "repository": "git@github.com:olynch/quiver",
+  "author": "Nathaniel Varkor <n@arkor.co>",
+  "license": "MIT",
+  "dependencies": {
+    "katex": "^0.16.10",
+    "workbox-sw": "^7.1.0"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@babel/core": "^7.24.5",
+    "@babel/eslint-parser": "^7.24.5",
+    "@babel/preset-env": "^7.24.5",
+    "eslint": "8",
+    "eslint-plugin-import": "^2.29.1",
+    "standardjs": "^1.0.0-alpha",
+    "vite": "^5.2.11"
+  }
+}

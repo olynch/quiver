@@ -1,7 +1,13 @@
 "use strict";
 
+import { Point, Position, mod } from "./ds.js"
+import { delay } from "./dom.js"
+import { CONSTANTS } from "./arrow.js"
+
+
+
 /// A directed n-pseudograph, in which (k + 1)-cells can connect k-cells.
-class Quiver {
+export class Quiver {
     constructor() {
         /// An array of array of cells. `cells[k]` is the array of k-cells.
         /// `cells[0]` is therefore the array of objects, etc.
@@ -236,7 +242,7 @@ class QuiverExport {
 }
 
 /// Various methods of exporting and importing a quiver.
-class QuiverImportExport extends QuiverExport {
+export class QuiverImportExport extends QuiverExport {
     /// A method to import a quiver as a string. `import(export(quiver))` should be the
     /// identity function. Currently `import` takes a `UI` into which to import directly.
     import() {}

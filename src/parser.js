@@ -1,4 +1,9 @@
-/// This is a simple recursive descent parser for tikz-cd diagrams. The intention is to be able to
+import { DOM } from "./dom.js"
+import { Colour, Position, clamp } from "./ds.js"
+import { CONSTANTS } from "./arrow.js"
+// import { Vertex, Edge } from "./ui.js"
+
+// This is a simple recursive descent parser for tikz-cd diagrams. The intention is to be able to
 /// parse those diagrams exported by quiver, in addition to a handful of other tikz-cd features that
 /// are commonly used in hand-written diagrams. Most of the implementation is dealing with errors
 /// nicely, e.g. issuing informative diagnostics. Note that we do not try to guarantee that

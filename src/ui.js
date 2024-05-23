@@ -1,5 +1,17 @@
 "use strict";
 
+import katex from "katex"
+import {
+    url_parameters, Enum, Offset, Position, Dimensions,
+    Colour, Point, clamp, rad_to_deg, deg_to_rad, mod
+} from "./ds.js"
+import { CONSTANTS, Arrow, Shape, Label, ArrowStyle } from "./arrow.js"
+import { CubicBezier } from "./curve.js";
+import { DOM, pointer_event, cancel, delay } from "./dom.js"
+import { Quiver, QuiverImportExport } from "./quiver.js"
+
+const KaTeX = new Promise((resolve) => resolve(katex))
+
 /// Various parameters.
 Object.assign(CONSTANTS, {
     /// The current quiver version.
@@ -7632,130 +7644,16 @@ class Edge extends Cell {
     }
 }
 
-// A `Promise` that returns the `katex` global object when it's loaded.
-let KaTeX = null;
-
 // We want until the (minimal) DOM content has loaded, so we have access to `document.body`.
-document.addEventListener("DOMContentLoaded", () => {
-    // We don't want the browser being too clever and trying to restore the scroll position, as that
-    // won't play nicely with the auto-centring.
-    if ("scrollRestoration" in window.history) {
-        window.history.scrollRestoration = "manual";
-    }
+// document.addEventListener("DOMContentLoaded", () => {
+//     // We don't want the browser being too clever and trying to restore the scroll position, as that
+//     // won't play nicely with the auto-centring.
+//     if ("scrollRestoration" in window.history) {
+//         window.history.scrollRestoration = "manual";
+//     }
 
-    // The global UI.
-    const body = new DOM.Element(document.body);
-    const ui = new UI(body);
-    ui.initialise();
-
-    const load_quiver_from_query_string = () => {
-        const query_data = url_parameters();
-
-        // Set the initial zoom level based on the `scale` parameter.
-        if (query_data.has("scale")) {
-            const scale = parseFloat(decodeURIComponent(query_data.get("scale")));
-            if (!Number.isNaN(scale)) {
-                ui.pan_view(Offset.zero(), scale);
-            }
-        }
-
-        // The `embed` parameter means that we should disable all UI elements and user interaction,
-        // because the diagram is being displayed in an `<iframe>`.
-        if (query_data.has("embed")) {
-            ui.switch_mode(new UIMode.Embedded())
-        }
-
-        // If there is `q` parameter in the query string, try to decode it as a diagram.
-        if (query_data.has("q")) {
-            const dismiss_loading_screen = () => {
-                // Dismiss the loading screen. We do this after a `delay` so that the loading
-                // screen captures any keyboard and pointer events that occurred during loading
-                // (since they are queued up while the diagram loading code is processing). We
-                // don't actually remove it, because JavaScript's timing can be a bit
-                // inconsistent under load.
-                delay(() => {
-                    document.removeEventListener("keydown", cancel);
-                    document.removeEventListener("keyup", cancel);
-                    // We only hide the loading screen after all the (KaTeX) fonts have been loaded.
-                    // This ensures that the diagram will have been rendered correctly by the time
-                    // we reveal it.
-                    document.fonts.ready.then(() => {
-                        ui.element.query_selector(".loading-screen").class_list.add("hidden");
-                    });
-                });
-            };
-
-            try {
-                // Decode the diagram.
-                QuiverImportExport.base64.import(ui, query_data.get("q"));
-                // If there is a `macro_url`, load the macros from it.
-                if (query_data.has("macro_url")) {
-                    ui.load_macros_from_url(decodeURIComponent(query_data.get("macro_url")));
-                }
-                // Adjust the diagram scale to fit the screen in embedded view.
-                // However, we have to be careful to only do this if the user
-                // hasn't already set the scale explicitly.
-                if (query_data.has("embed") && !query_data.has("scale")) {
-                    ui.scale_to_fit();
-                }
-                dismiss_loading_screen();
-            } catch (error) {
-                if (ui.quiver.is_empty()) {
-                    UI.display_error(
-                        "The saved diagram was malformed and could not be loaded."
-                    );
-                } else {
-                    // The importer will try to recover from errors, so we may have been mostly
-                    // successful.
-                    UI.display_error(
-                        "The saved diagram was malformed and may have been loaded incorrectly."
-                    );
-                }
-                dismiss_loading_screen();
-                // Rethrow the error so that it can be reported in the console.
-                throw error;
-            }
-        }
-    };
-
-    // Immediately load the KaTeX library.
-   const rendering_library = new DOM.Element("script", {
-        type: "text/javascript",
-        src: "KaTeX/katex.min.js",
-    }).listen("error", () => {
-        // Handle KaTeX not loading (somewhat) gracefully.
-        UI.display_error("KaTeX failed to load.");
-        // Remove the loading screen.
-        ui.element.query_selector(".loading-screen").class_list.add("hidden");
-    });
-
-    KaTeX = new Promise((accept) => {
-        rendering_library.listen("load", () => {
-            accept(katex);
-            // KaTeX is fast enough to be worth waiting for, but not
-            // immediately available. In this case, we delay loading
-            // the quiver until the library has loaded.
-            load_quiver_from_query_string();
-        });
-    });
-
-    // Load the style sheet needed for KaTeX.
-    document.head.appendChild(new DOM.Element("link", {
-        rel: "stylesheet",
-        href: "KaTeX/katex.css",
-    }).element);
-
-    // Trigger the script load.
-    document.head.appendChild(rendering_library.element);
-
-    // Prevent clicking on the logo from having any effect other than opening the link.
-    body.query_selector("#logo-link").listen("pointerdown", (event) => {
-        event.stopPropagation();
-    });
-
-    // Listen for history change events, and update the diagram accordingly.
-    window.addEventListener("popstate", () => {
-        ui.reset();
-        load_quiver_from_query_string();
-    });
-});
+//     // The global UI.
+//     const body = new DOM.Element(document.getElementById("root"));
+//     const ui = new UI(body);
+//     ui.initialise();
+// });
